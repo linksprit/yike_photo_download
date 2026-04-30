@@ -1,6 +1,6 @@
 import requests
 import json
-import os
+import os 
 
 # 获取文件信息
 class FindPhotoList:
