@@ -8,9 +8,13 @@
 ##  二、文件结构
 BaiduPhoto-main/
 ├─ FindPhotoList.py   # 第一步：爬取相册列表生成json元数据
+
 ├─ BaiduPhoto.py      # 第二步：读取json批量下载照片视频
+
 ├─ settings.json      # 账号配置文件（Cookie、bdstoken等）
+
 ├─ json/              # 自动生成：存放爬取到的文件元数据
+
 └─ BaiduPhoto/        # 自动生成：按日期分类存放下载好的图片视频
 
 ## 三、环境依赖
