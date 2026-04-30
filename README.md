@@ -7,6 +7,7 @@
 读取 JSON 文件，按日期自动分类文件夹、批量下载原图 / 视频，支持断点续下、自动重试、跳过已下载，防超时崩溃。
 ##  二、文件结构
 BaiduPhoto-main/
+
 ├─ FindPhotoList.py   # 第一步：爬取相册列表生成json元数据
 
 ├─ BaiduPhoto.py      # 第二步：读取json批量下载照片视频
