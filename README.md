@@ -22,12 +22,12 @@ BaiduPhoto-main/
 1. 安装 Python  
 推荐 Python3.10 及以上  
 2. 安装依赖库  
-打开 CMD/PowerShell 执行：  
-'bash '
-运行
-'pip install requests'
-配置文件 settings.json 说明
-配置字段解释
+打开 CMD/PowerShell 执行：    
+'bash '  
+运行  
+'pip install requests'  
+配置文件 settings.json 说明  
+配置字段解释  
 '''
 json
 {
