@@ -13,84 +13,99 @@ class BaiduPhoto:
         self.save_path = "./BaiduPhoto/"
         self.clienttype = None
         self.bdstoken = None
+        self.timeout = None
         self.folder_names = []
 
-        # 确保保存根目录存在
         os.makedirs(self.save_path, exist_ok=True)
 
-    # 下载图片（带重试、跳过已下载、防超时）
     def download_photo(self):
         files = os.listdir(self.json_path)
         total = len(files)
-        success = 0
 
-        for index, file in enumerate(files):
-            json_file = os.path.join(self.json_path, file)
-            
+        for idx, file in enumerate(files):
             try:
-                with open(json_file, 'r', encoding="utf-8") as f:
+                file_path = os.path.join(self.json_path, file)
+                with open(file_path, 'r', encoding="utf-8") as f:
                     json_data = json.load(f)
-            except:
-                print(f"❌ 读取JSON失败: {file}")
-                continue
 
-            date = json_data["extra_info"]["date_time"][:10].replace(':', '-')
-            filename = json_data["path"][12:]
-            fsid = json_data["fsid"]
-            save_path = os.path.join(self.save_path, date, filename)
+                date = json_data["extra_info"]["date_time"][:10].replace(':', '-')
+                filename = json_data["path"][12:]
+                fsid = json_data["fsid"]
+                target_path = os.path.join(self.save_path, date, filename)
 
-            # ============== 核心：跳过已下载文件 ==============
-            if os.path.exists(save_path):
-                print(f"✅ 已存在，跳过 {index+1}/{total}: {filename}")
-                success +=1
-                continue
+                # 跳过已下载
+                if os.path.exists(target_path):
+                    print(f"✅ [{idx+1}/{total}] 已存在，跳过：{filename}")
+                    continue
 
-            # 创建日期文件夹
-            date_folder = os.path.join(self.save_path, date)
-            os.makedirs(date_folder, exist_ok=True)
+                # 创建目录
+                date_dir = os.path.join(self.save_path, date)
+                os.makedirs(date_dir, exist_ok=True)
 
-            # ========== 自动重试下载 ==========
-            retry = 3
-            while retry > 0:
-                try:
-                    # 获取下载链接
-                    res = requests.get(
-                        self.URL.format(clienttype=self.clienttype, bdstoken=self.bdstoken, fsid=fsid),
-                        headers=self.headers,
-                        timeout=15
-                    )
-                    if res.status_code != 200:
+                # 获取下载地址（带重试）
+                retry = 3
+                dlink = None
+                while retry > 0:
+                    try:
+                        res = requests.get(
+                            self.URL.format(clienttype=self.clienttype, bdstoken=self.bdstoken, fsid=fsid),
+                            headers=self.headers,
+                            timeout=self.timeout
+                        )
+                        if res.status_code == 200:
+                            dlink = res.json()["dlink"]
+                            break
+                        else:
+                            retry -= 1
+                            time.sleep(2)
+                    except:
+                        retry -= 1
                         time.sleep(2)
-                        retry -=1
-                        continue
 
-                    # 获取真实下载地址
-                    dlink = res.json()['dlink']
-                    # 下载文件
-                    photo = requests.get(dlink, headers=self.headers, timeout=30)
-                    # 保存
-                    with open(save_path, 'wb') as f:
-                        f.write(photo.content)
+                if not dlink:
+                    print(f"❌ [{idx+1}/{total}] 获取地址失败：{filename}")
+                    continue
 
-                    print(f"✅ 下载成功 {index+1}/{total}: {date}, {filename}")
-                    success +=1
-                    break
+                # 下载文件（带重试）
+                retry = 3
+                content = None
+                while retry > 0:
+                    try:
+                        dl = requests.get(dlink, headers=self.headers, timeout=self.timeout)
+                        if dl.status_code == 200:
+                            content = dl.content
+                            break
+                        else:
+                            retry -= 1
+                            time.sleep(2)
+                    except:
+                        retry -= 1
+                        time.sleep(2)
 
-                except Exception as e:
-                    retry -=1
-                    print(f"⚠️  下载失败，重试中 ({retry}次): {filename} | 错误: {str(e)[:50]}")
-                    time.sleep(3)
+                if not content:
+                    print(f"❌ [{idx+1}/{total}] 下载失败：{filename}")
+                    continue
 
-        print(f"\n🎉 全部处理完成！成功：{success}/{total}")
+                # 保存
+                with open(target_path, 'wb') as f:
+                    f.write(content)
+
+                print(f"✅ [{idx+1}/{total}] 下载成功：{filename}")
+
+            except Exception as e:
+                print(f"⚠️ [{idx+1}/{total}] 异常跳过：{file} | {str(e)[:50]}")
+
+        print("\n🎉 全部任务处理完成！")
 
     def start(self):
         with open("settings.json", 'r', encoding='utf-8') as f:
             json_data = json.load(f)
         self.clienttype = json_data["clienttype"]
         self.bdstoken = json_data["bdstoken"]
+        self.timeout = json_data["timeout"]
         self.headers["Cookie"] = json_data["Cookie"]
-        self.download_photo()      
+        self.download_photo()
 
 if __name__ == "__main__":
-    baidu_photo = BaiduPhoto()
-    baidu_photo.start()
+    baidu = BaiduPhoto()
+    baidu.start()
