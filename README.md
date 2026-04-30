@@ -51,7 +51,14 @@ F12 开发者工具 → Network 网络
 随便点开一个相册接口，复制请求头里的 Cookie
 
 从接口请求参数里拿到 bdstoken
-
+在百度一刻相册浏览器端 https://photo.baidu.com/photo/web/home 按下F12，然后刷新
+按照以下流程获得Cookie 
+获取表单数据 
+<img width="1233" height="991" alt="image" src="https://github.com/user-attachments/assets/d22ebdd1-9340-470b-b9f9-41f29d45a313" />
+<img width="1233" height="991" alt="image" src="https://github.com/user-attachments/assets/944dca88-a9c7-42e3-8db9-585c791d9017" />
+将2、3步中找到的值填入settings.json对应位置，如果Cookie值中有双引号，则用转义字符\"代替双引号"
+先运行FindPhotoList.py获得所有照片的fsid和其他信息（包括拍摄时间、地点等）
+再运行BaiduPhtot.py下载所有照片视频
 
 ## 六、使用步骤
 第一步：爬取相册元数据
